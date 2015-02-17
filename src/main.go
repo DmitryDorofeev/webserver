@@ -6,8 +6,9 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"statuses"
+	"status"
 	"strings"
+	"log"
 )
 
 func main() {
@@ -41,20 +42,20 @@ func handleClient(conn net.Conn) {
 	request = string(buf)
 	headerStrings := strings.Split(request, "\n")
 
-	requestType := headerStrings[0]
-	fmt.Println(requestType)
-	path := strings.Split(requestType, " ")[1]
+	requestString := headerStrings[0]
+	log.Write(requestString)
+	path := strings.Split(requestString, " ")[1]
 	if path == "/" {
-		path = statuses.DEFAULT_FILE
+		path = status.DEFAULT_FILE
 	}
 	ext := headers.GetExtByFileName(path)
 
 	contentType := headers.GetHeaderByExt(ext)
 
 	file, err := ioutil.ReadFile("../static" + path)
-	respCode = statuses.OK
+	respCode = status.OK
 	if err != nil {
-		respCode = statuses.NOT_FOUND
+		respCode = status.NOT_FOUND
 		file, err = ioutil.ReadFile("../static" + statuses.FILE_404)
 		checkError(err)
 	}
