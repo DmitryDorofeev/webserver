@@ -1,5 +1,7 @@
 {
-  "root": "",
+  "port": 9797,
+  "root": "static",
   "enableLog": {
-  }
+  },
+  "defaultFile": "index.html"
 }

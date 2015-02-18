@@ -8,15 +8,15 @@ import (
 	"os"
 	"status"
 	"strings"
-	"log"
+	"logging"
+	"config"
 )
 
 func main() {
 
-	service := ":9797"
+	service := ":" + config.Get().Port
 	listener, err := net.Listen("tcp", service)
 	checkError(err)
-
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -43,20 +43,20 @@ func handleClient(conn net.Conn) {
 	headerStrings := strings.Split(request, "\n")
 
 	requestString := headerStrings[0]
-	log.Write(requestString)
+	logging.Write(requestString)
 	path := strings.Split(requestString, " ")[1]
 	if path == "/" {
-		path = status.DEFAULT_FILE
+		path = "/" + config.Get().DefaultFile
 	}
 	ext := headers.GetExtByFileName(path)
 
 	contentType := headers.GetHeaderByExt(ext)
 
-	file, err := ioutil.ReadFile("../static" + path)
-	respCode = status.OK
+	file, err := ioutil.ReadFile(config.Get().Root + path)
+	respCode = status.GetStatusLine(status.OK)
 	if err != nil {
-		respCode = status.NOT_FOUND
-		file, err = ioutil.ReadFile("../static" + statuses.FILE_404)
+		respCode = status.GetStatusLine(status.NOT_FOUND)
+		file, err = ioutil.ReadFile(config.Get().Root + status.FILE_404)
 		checkError(err)
 	}
 
