@@ -1,9 +1,11 @@
 package logging
 
-import "fmt"
-
+import (
+    "fmt"
+    "config"
+)
 func Write(message string) {
-	enable := true
+	enable := config.Get().EnableLog
 	if enable {
 		fmt.Println(message)
 	}

@@ -9,7 +9,7 @@ import (
 type Config struct {
 	Port        int    `json:"port"`
 	Root        string `json:"root"`
-	EnableLog   string `json:"enableLog"`
+	EnableLog   bool `json:"enableLog"`
 	DefaultFile string `json:"defaultFile"`
 }
 

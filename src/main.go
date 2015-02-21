@@ -12,9 +12,13 @@ import (
 	"config"
 )
 
+const (
+    STRING_SEPARATOR string = "\n"
+)
+
 func main() {
 
-	service := ":" + config.Get().Port
+	service := fmt.Sprintf(":%v", config.Get().Port)
 	listener, err := net.Listen("tcp", service)
 	checkError(err)
 	for {
@@ -40,7 +44,7 @@ func handleClient(conn net.Conn) {
 		return
 	}
 	request = string(buf)
-	headerStrings := strings.Split(request, "\n")
+	headerStrings := strings.Split(request, STRING_SEPARATOR)
 
 	requestString := headerStrings[0]
 	logging.Write(requestString)
@@ -62,7 +66,7 @@ func handleClient(conn net.Conn) {
 
 	str := string(file)
 
-	var response string = respCode + contentType + "\nServer: Veefor\n\n"
+	var response string = respCode + contentType + "\nConnection: keep-alive\nServer: DmitryDorofeevAwesomeServer\n\n"
 
 	_, err2 := conn.Write([]byte(response + str))
 	checkError(err2)
