@@ -35,7 +35,9 @@ func handleClient(conn net.Conn) {
 	var (
 		respCode string
 		buf      = make([]byte, 1024)
-		request  string
+		HttpRequest  string
+		contentType  string
+        str string
 	)
 
 	_, err := conn.Read(buf)
@@ -43,31 +45,47 @@ func handleClient(conn net.Conn) {
 	if err != nil {
 		return
 	}
-	request = string(buf)
-	headerStrings := strings.Split(request, STRING_SEPARATOR)
+	HttpRequest = string(buf)
+	headerStrings := strings.Split(HttpRequest, STRING_SEPARATOR)
 
 	requestString := headerStrings[0]
-	logging.Write(requestString)
+    
+    request := headers.ParseQueryString(requestString)
+    
 	path := strings.Split(requestString, " ")[1]
-	if path == "/" {
-		path = "/" + config.Get().DefaultFile
-	}
-	ext := headers.GetExtByFileName(path)
+    
+    if (request["method"] == "POST") {
+        
+        str = ""
+        respCode = status.GetStatusLine(status.BAD_REQUEST)
+        contentType = ""
+        
+    } else {
+        
+        if path == "/" {
+            path = "/" + config.Get().DefaultFile
+        }
+        ext := headers.GetExtByFileName(path)
 
-	contentType := headers.GetHeaderByExt(ext)
+        contentType = headers.GetHeaderByExt(ext)
 
-	file, err := ioutil.ReadFile(config.Get().Root + path)
-	respCode = status.GetStatusLine(status.OK)
-	if err != nil {
-		respCode = status.GetStatusLine(status.NOT_FOUND)
-		file, err = ioutil.ReadFile(config.Get().Root + status.FILE_404)
-		checkError(err)
-	}
+        file, err := ioutil.ReadFile(config.Get().Root + path)
+        logging.Write(config.Get().Root + path)
+        respCode = status.GetStatusLine(status.OK)
+        if err != nil {
+            respCode = status.GetStatusLine(status.NOT_FOUND)
+            file, err = ioutil.ReadFile(config.Get().Root + status.FILE_404)
+            checkError(err)
+        }
 
-	str := string(file)
+        str = string(file)
+        
+    }
+    
+	var response string = respCode + contentType + "\nConnection: close\nServer: DmitryDorofeevAwesomeServer\n"
+    response += fmt.Sprintf("Content-Length: %v\n", len(str))
 
-	var response string = respCode + contentType + "\nConnection: keep-alive\nServer: DmitryDorofeevAwesomeServer\n\n"
-
+    response += "\n"
 	_, err2 := conn.Write([]byte(response + str))
 	checkError(err2)
 }

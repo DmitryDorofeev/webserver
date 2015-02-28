@@ -1,5 +1,5 @@
 {
-  "port": 9797,
+  "port": 80,
   "root": "static",
   "enableLog": false,
   "defaultFile": "index.html"
