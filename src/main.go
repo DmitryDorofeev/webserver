@@ -22,6 +22,7 @@ var root string = ""
 func main() {
 
 	flag.StringVar(&root, "r", "static", "document root")
+	flag.Parse()
 
 	service := fmt.Sprintf(":%v", config.Get().Port)
 	listener, err := net.Listen("tcp", service)
