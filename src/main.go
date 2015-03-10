@@ -2,6 +2,7 @@ package main
 
 import (
 	"config"
+	"flag"
 	"fmt"
 	"headers"
 	"io/ioutil"
@@ -16,7 +17,11 @@ const (
 	STRING_SEPARATOR string = "\n"
 )
 
+var root string = ""
+
 func main() {
+
+	flag.StringVar(&root, "r", "static", "document root")
 
 	service := fmt.Sprintf(":%v", config.Get().Port)
 	listener, err := net.Listen("tcp", service)
@@ -77,15 +82,15 @@ func handleClient(conn net.Conn) {
 
 		contentType = headers.GetHeaderByExt(ext)
 
-		file, err := ioutil.ReadFile(config.Get().Root + path)
+		file, err := ioutil.ReadFile(root + path)
 
-		logging.Write(config.Get().Root + path)
+		logging.Write(root + path)
 
 		respCode = status.GetStatusLine(status.OK)
 
 		if err != nil {
 			respCode = status.GetStatusLine(status.NOT_FOUND)
-			file, err = ioutil.ReadFile(config.Get().Root + status.FILE_404)
+			file, err = ioutil.ReadFile(root + status.FILE_404)
 			checkError(err)
 		}
 
@@ -106,9 +111,9 @@ func handleClient(conn net.Conn) {
 
 		contentType = headers.GetHeaderByExt(ext)
 
-		file, err := ioutil.ReadFile(config.Get().Root + path)
+		file, err := ioutil.ReadFile(root + path)
 
-		logging.Write(config.Get().Root + path)
+		logging.Write(root + path)
 
 		respCode = status.GetStatusLine(status.OK)
 		if err != nil {
@@ -117,7 +122,7 @@ func handleClient(conn net.Conn) {
 				file = []byte("Forbidden")
 			} else {
 				respCode = status.GetStatusLine(status.NOT_FOUND)
-				file, err = ioutil.ReadFile(config.Get().Root + status.FILE_404)
+				file, err = ioutil.ReadFile(root + status.FILE_404)
 			}
 
 		}
