@@ -2,14 +2,15 @@ package main
 
 import (
 	"config"
-	"flag"
 	"fmt"
 	"headers"
 	"io/ioutil"
 	"logging"
 	"net"
 	"os"
+	"runtime"
 	"status"
+	"strconv"
 	"strings"
 )
 
@@ -17,12 +18,26 @@ const (
 	STRING_SEPARATOR string = "\n"
 )
 
-var root string = ""
+var (
+	root string = config.Get().Root
+	ncpu int    = 1
+)
 
 func main() {
 
-	flag.StringVar(&root, "r", "static", "document root")
-	flag.Parse()
+	i := 2
+
+	for i <= len(os.Args) {
+		switch os.Args[i-1] {
+		case "-r":
+			root = os.Args[i]
+		case "-c":
+			i, _ := strconv.Atoi(os.Args[i])
+			ncpu = i
+		}
+		i = i + 2
+	}
+	runtime.GOMAXPROCS(ncpu)
 
 	service := fmt.Sprintf(":%v", config.Get().Port)
 	listener, err := net.Listen("tcp", service)
@@ -120,7 +135,7 @@ func handleClient(conn net.Conn) {
 		if err != nil {
 			if isDirectory {
 				respCode = status.GetStatusLine(status.FORBIDDEN)
-				file = []byte("Forbidden")
+				file = []byte("Forbidden") // TODO под чем я был??
 			} else {
 				respCode = status.GetStatusLine(status.NOT_FOUND)
 				file, err = ioutil.ReadFile(root + status.FILE_404)

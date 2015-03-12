@@ -1,1 +1,2 @@
-export GOPATH=/Users/dmitry/dev/webserver/
+#!/bin/bash
+export GOPATH=${PWD}
