@@ -12,6 +12,7 @@ import (
 	"status"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -58,10 +59,12 @@ func handleClient(conn net.Conn) {
 		buf           = make([]byte, 1024)
 		HttpRequest   string
 		contentType   string
+		date          string
 		str           string
 		contentLength string
-		isDirectory   bool = false
-		isHeadRequest bool = false
+		isDirectory   bool   = false
+		isHeadRequest bool   = false
+		response      string = ""
 	)
 
 	_, err := conn.Read(buf)
@@ -114,6 +117,8 @@ func handleClient(conn net.Conn) {
 
 		contentLength = fmt.Sprintf("Content-Length: %v\r\n", len(str))
 
+		date = fmt.Sprintf("Date: %v\r\n", time.Now().Format(time.RFC822))
+
 		str = "\r\n\r\n"
 
 	} else {
@@ -143,7 +148,7 @@ func handleClient(conn net.Conn) {
 
 		}
 
-		if strings.Contains(path, "..") {
+		if strings.Contains(path, "../") {
 			respCode = status.GetStatusLine(status.FORBIDDEN)
 			file = []byte("Forbidden")
 		}
@@ -154,8 +159,9 @@ func handleClient(conn net.Conn) {
 
 	}
 
-	var response string = respCode + contentType + "\r\nConnection: close\r\nServer: DmitryDorofeevAwesomeServer\r\n"
+	response = respCode + contentType + "\r\nConnection: close\r\nServer: DmitryDorofeevAwesomeServer\r\n"
 	response += contentLength
+	response += date
 	response += "\r\n"
 	if !isHeadRequest {
 		response += str
